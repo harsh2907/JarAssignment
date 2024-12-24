@@ -1,6 +1,8 @@
 package com.myjar.jarassignment.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +11,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +27,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,7 +46,6 @@ fun AppNavigation(
     viewModel: JarViewModel,
 ) {
     val navController = rememberNavController()
-    var navigate by remember { mutableStateOf<String>("") }
 
     NavHost(
         modifier = modifier,
@@ -43,6 +53,8 @@ fun AppNavigation(
         startDestination = "item_list"
     ) {
         composable("item_list") {
+
+            var navigate by remember { mutableStateOf<String>("") }
 
             LaunchedEffect(navigate) {
                 if (navigate.isNotEmpty()) {
@@ -54,11 +66,14 @@ fun AppNavigation(
                 }
             }
 
+            val searchQuery by viewModel.searchText.collectAsStateWithLifecycle()
             val computerItems by viewModel.listStringData.collectAsStateWithLifecycle()
 
             ItemListScreen(
                 computerItems = computerItems,
-                onNavigateToDetail = { selectedItem -> navigate = selectedItem }
+                searchQuery = searchQuery,
+                onNavigateToDetail = { selectedItem -> navigate = selectedItem },
+                onSearch = viewModel::onSearchTextChange,
             )
         }
 
@@ -75,23 +90,41 @@ fun AppNavigation(
     }
 }
 
+
 @Composable
 fun ItemListScreen(
     computerItems: List<ComputerItem>,
+    searchQuery: String,
+    onSearch: (String) -> Unit,
     onNavigateToDetail: (String) -> Unit,
 ) {
-    LazyColumn(
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        items(computerItems) { item ->
-            ItemCard(
-                item = item,
-                onClick = { onNavigateToDetail(item.id) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+
+        CustomSearchView(
+            modifier = Modifier.fillMaxWidth(),
+            search = searchQuery,
+            onValueChange = onSearch
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            items(computerItems) { item ->
+                ItemCard(
+                    item = item,
+                    onClick = { onNavigateToDetail(item.id) }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
+
     }
 }
 
@@ -125,4 +158,37 @@ fun ItemDetailScreen(itemId: String?) {
             .fillMaxSize()
             .padding(16.dp)
     )
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomSearchView(
+    search: String,
+    modifier: Modifier = Modifier,
+    onValueChange: (String) -> Unit
+) {
+
+    Box(
+        modifier = modifier
+            .padding(20.dp)
+            .clip(CircleShape)
+            .background(Color.LightGray)
+
+    ) {
+        TextField(value = search,
+            onValueChange = onValueChange,
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.LightGray,
+                focusedPlaceholderColor = Color(0XFF888D91),
+                unfocusedLabelColor = Color(0XFF888D91),
+                focusedLeadingIconColor = Color(0XFF888D91),
+                focusedIndicatorColor = Color.Transparent,
+                focusedTextColor = Color.Black
+            ),
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
+           placeholder = { Text(text = "Search") }
+        )
+    }
+
 }
