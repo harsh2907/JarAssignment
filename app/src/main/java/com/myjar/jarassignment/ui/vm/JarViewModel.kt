@@ -10,6 +10,7 @@ import com.myjar.jarassignment.data.repository.JarRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,7 +19,7 @@ class JarViewModel : ViewModel() {
 
     private val _listStringData = MutableStateFlow<List<ComputerItem>>(emptyList())
     val listStringData: StateFlow<List<ComputerItem>>
-        get() = _listStringData
+        get() = _listStringData.asStateFlow()
 
     private val repository: JarRepository = JarRepositoryImpl(createRetrofit())
 

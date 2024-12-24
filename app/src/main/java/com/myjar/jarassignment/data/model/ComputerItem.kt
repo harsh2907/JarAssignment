@@ -20,4 +20,13 @@ data class ItemData(
     @SerializedName("Case Size") val caseSize: String? = null,
     @SerializedName("CPU model") val cpuModel: String? = null,
     @SerializedName("Hard disk size") val hardDiskSize: String? = null
-)
+){
+    fun getFormattedData():String{
+        var result = ""
+        color?.let { result += "Color: $it\n" }
+        capacity?.let { result += "Capacity: $it\n" }
+        price?.let { result += "Price: $$it\n" }
+
+        return result
+    }
+}
